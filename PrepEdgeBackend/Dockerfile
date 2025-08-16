@@ -1,13 +1,28 @@
-# Use a lightweight Java 21 image
+# --- Build Stage ---
+# Use a Maven image to build the application
+FROM maven:3.8.5-openjdk-21 AS build
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the pom.xml and the source code
+COPY pom.xml .
+COPY src ./src
+
+# Build the application and create the executable JAR file
+RUN mvn clean package -DskipTests
+
+# --- Final Stage ---
+# Use a lightweight Java 21 image for the final container
 FROM openjdk:21-jdk-slim
 
 # Set a working directory inside the container
 WORKDIR /app
 
-# Copy the compiled JAR file from the target directory to the container
-COPY target/*.jar app.jar
+# Copy the compiled JAR file from the 'build' stage
+COPY --from=build /app/target/*.jar app.jar
 
-# Tell the container to listen on the port specified by the PORT environment variable, defaulting to 8080
+# Tell the container to listen on port 8080
 EXPOSE 8080
 
 # The command to run when the container starts
