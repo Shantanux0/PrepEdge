@@ -48,7 +48,7 @@ export default function App() {
         try {
             // URL for your Spring Boot backend.
             // For production, this should come from an environment variable.
-            const backendApiUrl = 'http://localhost:8080/interview-questions/api/interview/generate';
+            const backendApiUrl = 'https://prepedgeai.onrender.com/interview-questions/api/interview/generate';
 
             const response = await fetch(backendApiUrl, {
                 method: 'POST',
