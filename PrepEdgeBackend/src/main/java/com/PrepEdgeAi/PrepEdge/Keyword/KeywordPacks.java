@@ -12,7 +12,7 @@ public class KeywordPacks {
             "data structures","algorithms","operating systems","networking","tcp/ip","http","dns",
             "microservices","rest api","backend development","frontend development","fullstack development",
             "mern stack","mevn","mean","django","flask","laravel","dotnet","java backend dev","java fullstack","spring microservices","graphql","apollo","java backend","python data science","docker & kubernetes",
-            "react hooks"
+            "react hooks","java spring","react frontend"
     );
 
     public static final Set<String> CLOUD_DEVOPS_PACK = Set.of(
