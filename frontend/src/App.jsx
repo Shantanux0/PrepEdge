@@ -1,6 +1,4 @@
 import React from 'react';
-
-
 // Main application component
 export default function App() {
     // --- STATE MANAGEMENT ---
