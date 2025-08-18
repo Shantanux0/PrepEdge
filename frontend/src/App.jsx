@@ -9,7 +9,6 @@ export default function App() {
     const [error, setError] = React.useState("");
     const [showSplash, setShowSplash] = React.useState(true); // For initial splash screen
     const [loadingMore, setLoadingMore] = React.useState(false); // For "Generate More" button
-    // --- NEW: State to manage the selected question for the modal view
     const [selectedQuestion, setSelectedQuestion] = React.useState(null);
 
     // --- CONSTANTS ---
@@ -33,7 +32,7 @@ export default function App() {
         return () => clearTimeout(timer);
     }, []);
 
-    // --- NEW: Effect to lock body scroll when the modal is open
+    // Effect to lock body scroll when the modal is open
     React.useEffect(() => {
         if (selectedQuestion) {
             document.body.style.overflow = 'hidden';
@@ -112,11 +111,10 @@ export default function App() {
         </div>
     );
 
-    // --- NEW: Modal component for displaying a single question in a focused view.
+    // Modal component for displaying a single question in a focused view.
     const QuestionModal = ({ question, onClose }) => {
         if (!question) return null;
 
-        // This allows closing the modal by clicking on the background overlay.
         const handleOverlayClick = (e) => {
             if (e.target === e.currentTarget) {
                 onClose();
@@ -159,11 +157,11 @@ export default function App() {
 
 
     // Question Card Component
-    // --- CHANGED: Added `onClick` prop and `cursor-pointer` for modal functionality.
     const QuestionCard = ({ q, index, onClick }) => (
         <div
             onClick={onClick}
-            className="bg-white border border-slate-200 rounded-xl shadow-sm p-4 sm:p-6 transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-2 hover:scale-[1.03] cursor-pointer"
+            // --- CHANGED: Added `relative` and `group` classes to enable the hover tooltip.
+            className="relative group bg-white border border-slate-200 rounded-xl shadow-sm p-4 sm:p-6 transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-2 hover:scale-[1.03] cursor-pointer"
         >
             <div className="flex items-start gap-4">
                 <div className="text-amber-500 font-bold text-lg sm:text-xl flex-shrink-0">Q{index + 1}</div>
@@ -180,6 +178,10 @@ export default function App() {
                         {q.difficulty}
                     </span>
                 </div>
+            </div>
+            {/* --- NEW: Tooltip that appears on hover to guide the user. --- */}
+            <div className="absolute bottom-3 right-3 px-2.5 py-1 bg-slate-900/80 text-white text-xs rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none backdrop-blur-sm">
+                Click to expand
             </div>
         </div>
     );
@@ -291,7 +293,6 @@ export default function App() {
                     ) : questions.length > 0 ? (
                         <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                             {questions.map((q, idx) => (
-                                // --- CHANGED: Pass the onClick handler to each card.
                                 <QuestionCard
                                     key={idx}
                                     q={q}
@@ -319,7 +320,6 @@ export default function App() {
             </div>
             <ProfessionalFooter />
 
-            {/* --- NEW: Conditionally render the modal outside the main layout flow. --- */}
             <QuestionModal
                 question={selectedQuestion}
                 onClose={() => setSelectedQuestion(null)}
