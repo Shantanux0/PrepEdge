@@ -1,6 +1,5 @@
 import React from 'react';
-// --- NEW: Added Vercel Analytics import. Note: Using '@vercel/analytics/react' for standard React apps.
-import { Analytics } from "@vercel/analytics/react";
+
 
 // Main application component
 export default function App() {
