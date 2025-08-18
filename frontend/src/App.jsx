@@ -1,4 +1,6 @@
 import React from 'react';
+// --- NEW: Added Vercel Analytics import. Note: Using '@vercel/analytics/react' for standard React apps.
+import { Analytics } from "@vercel/analytics/react";
 
 // Main application component
 export default function App() {
@@ -160,7 +162,6 @@ export default function App() {
     const QuestionCard = ({ q, index, onClick }) => (
         <div
             onClick={onClick}
-            // --- CHANGED: Added `relative` and `group` classes to enable the hover tooltip.
             className="relative group bg-white border border-slate-200 rounded-xl shadow-sm p-4 sm:p-6 transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-2 hover:scale-[1.03] cursor-pointer"
         >
             <div className="flex items-start gap-4">
@@ -179,7 +180,6 @@ export default function App() {
                     </span>
                 </div>
             </div>
-            {/* --- NEW: Tooltip that appears on hover to guide the user. --- */}
             <div className="absolute bottom-3 right-3 px-2.5 py-1 bg-slate-900/80 text-white text-xs rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none backdrop-blur-sm">
                 Click to expand
             </div>
@@ -324,6 +324,8 @@ export default function App() {
                 question={selectedQuestion}
                 onClose={() => setSelectedQuestion(null)}
             />
+            {/* --- NEW: Added the Vercel Analytics component. --- */}
+            <Analytics />
         </div>
     );
 }
