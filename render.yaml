@@ -21,12 +21,12 @@ services:
         value: http://localhost:5173,https://prepedge.onrender.com
 
   # --- Frontend Static Site ---
-  - type: static_site
+  - type: web
     name: prepedge-frontend
-    runtime: node
+    runtime: static
     rootDir: frontend
     buildCommand: npm install && npm run build
-    publishPath: dist
+    staticPublishPath: dist
     envVars:
       - key: VITE_API_BASE_URL
         fromService:
