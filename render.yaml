@@ -1,7 +1,7 @@
 services:
-  # --- Backend Web Service ---
+  # --- PrepEdge API (Backend) ---
   - type: web
-    name: prepedge-backend
+    name: prepedge-api
     runtime: java
     rootDir: PrepEdgeBackend
     buildCommand: ./mvnw clean install -DskipTests
@@ -18,11 +18,11 @@ services:
       - key: GROQ_API_KEY
         sync: false
       - key: CORS_ALLOWED_ORIGINS
-        value: http://localhost:5173,https://prepedge.onrender.com
+        value: http://localhost:5173,https://prepedge-web.onrender.com
 
-  # --- Frontend Static Site ---
+  # --- PrepEdge Web (Frontend Static) ---
   - type: web
-    name: prepedge-frontend
+    name: prepedge-web
     runtime: static
     rootDir: frontend
     buildCommand: npm install && npm run build
@@ -31,5 +31,5 @@ services:
       - key: VITE_API_BASE_URL
         fromService:
           type: web
-          name: prepedge-backend
+          name: prepedge-api
           property: host
