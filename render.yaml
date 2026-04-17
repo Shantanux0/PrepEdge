@@ -3,7 +3,8 @@ services:
   - type: web
     name: prepedge-api
     runtime: docker
-    rootDir: PrepEdgeBackend
+    dockerfilePath: PrepEdgeBackend/Dockerfile
+    dockerContext: PrepEdgeBackend
     envVars:
       - key: PORT
         value: 8080
