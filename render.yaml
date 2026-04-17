@@ -1,11 +1,9 @@
 services:
-  # --- PrepEdge API (Backend) ---
+  # --- PrepEdge API (Backend Docker) ---
   - type: web
     name: prepedge-api
     runtime: docker
     rootDir: PrepEdgeBackend
-    buildCommand: ./mvnw clean install -DskipTests
-    startCommand: java -jar target/demo-0.0.1-SNAPSHOT.jar
     envVars:
       - key: PORT
         value: 8080
