@@ -1,6 +1,5 @@
 package com.PrepEdgeAi.PrepEdge.provider;
 
-
 import com.PrepEdgeAi.PrepEdge.Entity.InterviewQuestion;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,36 +17,83 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * AI Provider implementation for Groq.
+ * Groq's API is OpenAI-compatible, so this follows a similar structure to GPTProvider.
+ */
 @Component
 @Slf4j
-public class GPTProvider implements AIProvider {
+public class GroqProvider implements AIProvider {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper mapper;
     private final String apiKey;
+    private final String apiUrl;
     private final String model;
 
-    public GPTProvider(RestTemplate restTemplate, ObjectMapper mapper,
-                       @Value("${openai.api.key}") String apiKey,
-                       @Value("${openai.model}") String model) {
+    public GroqProvider(RestTemplate restTemplate, ObjectMapper mapper,
+                        @Value("${groq.api.key}") String apiKey,
+                        @Value("${groq.api.url}") String apiUrl,
+                        @Value("${groq.model}") String model) {
         this.restTemplate = restTemplate;
         this.mapper = mapper;
         this.apiKey = apiKey;
+        this.apiUrl = apiUrl;
         this.model = model;
     }
 
     @Override
+    public boolean classifyTopic(String topic) {
+        if (topic == null || topic.isBlank()) return false;
+        log.info("Classifying topic '{}' using Groq", topic);
+        
+        try {
+            String prompt = "Classify this topic: '" + topic + "'. Is it related to programming or tech interviews? Answer with ONLY 'Yes' or 'No'.";
+            Map<String, Object> response = callGroqWithPrompt(prompt);
+            String text = extractTextFromResponse(response).trim().toLowerCase();
+            return text.contains("yes");
+        } catch (Exception e) {
+            log.error("Groq classification failed for topic '{}': {}", topic, e.getMessage());
+            return false;
+        }
+    }
+
+    private Map<String, Object> callGroqWithPrompt(String prompt) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);
+
+        Map<String, Object> systemMessage = Map.of(
+                "role", "system",
+                "content", "You are a specialized classifier. You must return only 'Yes' or 'No'."
+        );
+        Map<String, Object> userMessage = Map.of(
+                "role", "user",
+                "content", prompt
+        );
+
+        Map<String, Object> body = Map.of(
+                "model", this.model,
+                "messages", List.of(systemMessage, userMessage),
+                "temperature", 0.0
+        );
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+        return restTemplate.postForObject(apiUrl, request, Map.class);
+    }
+
+    @Override
     public String getName() {
-        return "GPT";
+        return "Groq";
     }
 
     @Override
     public List<InterviewQuestion> generateQuestions(String topic) throws Exception {
-        log.info("Attempting to generate questions for topic '{}' with GPT model: {}", topic, model);
-        Map<String, Object> response = callGPT(topic);
+        log.info("Attempting to generate questions for topic '{}' with Groq model: {}", topic, model);
+        Map<String, Object> response = callGroq(topic);
         List<InterviewQuestion> parsed = parseResponse(response, topic);
         if (!parsed.isEmpty()) {
-            log.info("Successfully generated {} questions for topic '{}' using GPT model {}", parsed.size(), topic, model);
+            log.info("Successfully generated {} questions for topic '{}' using Groq model {}", parsed.size(), topic, model);
             return parsed;
         }
         return Collections.emptyList();
@@ -61,9 +107,7 @@ public class GPTProvider implements AIProvider {
                 """.formatted(topic);
     }
 
-    private Map<String, Object> callGPT(String topic) {
-        String url = "[https://api.openai.com/v1/chat/completions](https://api.openai.com/v1/chat/completions)";
-
+    private Map<String, Object> callGroq(String topic) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(apiKey);
@@ -80,11 +124,11 @@ public class GPTProvider implements AIProvider {
         Map<String, Object> body = Map.of(
                 "model", this.model,
                 "messages", List.of(systemMessage, userMessage),
-                "response_format", Map.of("type", "json_object") // Ensures JSON output
+                "temperature", 0.7
         );
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-        return restTemplate.postForObject(url, request, Map.class);
+        return restTemplate.postForObject(apiUrl, request, Map.class);
     }
 
     @SuppressWarnings("unchecked")
@@ -92,21 +136,19 @@ public class GPTProvider implements AIProvider {
         if (response == null) return Collections.emptyList();
 
         String rawJson = extractTextFromResponse(response);
-        String cleaned = rawJson.trim();
+        String cleaned = rawJson.trim()
+                .replaceAll("^```json\\s*", "")
+                .replaceAll("^```\\s*", "")
+                .replaceAll("\\s*```$", "")
+                .trim();
 
         if (cleaned.isEmpty()) return Collections.emptyList();
-
-        // GPT's JSON mode might return an object with a key containing the array.
-        // We need to find the array within the returned JSON. A robust parser would handle this,
-        // but for simplicity, we'll assume a common structure. Let's assume it's an array directly for now.
-        // A more complex response might be `{"questions": [...]}`. We'll try to handle both.
 
         List<Map<String, Object>> items;
         if (cleaned.startsWith("[")) {
             items = mapper.readValue(cleaned, new TypeReference<>() {});
         } else {
             Map<String, Object> root = mapper.readValue(cleaned, new TypeReference<>() {});
-            // Find the first value that is a list
             items = (List<Map<String, Object>>) root.values().stream()
                     .filter(v -> v instanceof List).findFirst()
                     .orElse(Collections.emptyList());
@@ -131,7 +173,7 @@ public class GPTProvider implements AIProvider {
             Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
             return message.get("content").toString();
         } catch (Exception e) {
-            log.error("Failed to parse GPT response structure: {}", response, e);
+            log.error("Failed to parse Groq response structure: {}", response, e);
             return "";
         }
     }

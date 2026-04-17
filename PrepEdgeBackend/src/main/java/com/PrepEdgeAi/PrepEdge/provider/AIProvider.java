@@ -20,6 +20,14 @@ public interface AIProvider {
     List<InterviewQuestion> generateQuestions(String topic) throws Exception;
 
     /**
+     * Classifies whether a topic is related to programming or tech interviews.
+     *
+     * @param topic The topic to classify.
+     * @return true if it's a valid tech topic, false otherwise.
+     */
+    boolean classifyTopic(String topic);
+
+    /**
      * Gets the name of the provider for logging purposes.
      *
      * @return The provider's name (e.g., "Gemini", "GPT").

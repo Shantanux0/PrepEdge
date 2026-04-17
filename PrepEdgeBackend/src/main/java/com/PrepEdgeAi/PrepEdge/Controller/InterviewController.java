@@ -27,4 +27,9 @@ public class InterviewController {
         return aiService.generateQuestions(topic);
     }
 
+    @GetMapping("/api/interview/topics")
+    public java.util.Set<String> getAllTopics() {
+        return aiService.getAllSupportedTopics();
+    }
+
 }

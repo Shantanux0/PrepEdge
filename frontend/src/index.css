@@ -2,8 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background-color: #0a0a0a;
-  color: #0e0e0e;
-  font-family: 'Poppins', sans-serif;
+@layer base {
+  body {
+    @apply transition-colors duration-300 ease-in-out font-sans;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/20 dark:border-slate-800/50;
+  }
+  
+  .glass-card {
+    @apply bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-primary-500/50 dark:hover:border-primary-500/50 transition-all duration-300;
+  }
+
+  /* 3D Card Flip Utilities */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 dark:bg-slate-800 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-300 dark:bg-slate-700;
+}
+
+/* Selection Color */
+::selection {
+  @apply bg-primary-500/30 text-primary-900 dark:text-primary-100;
 }

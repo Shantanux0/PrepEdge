@@ -6,10 +6,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 @SpringBootApplication
-@EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
+
 public class PrepEdgeApplication {
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(PrepEdgeApplication.class, args);
 	}
 

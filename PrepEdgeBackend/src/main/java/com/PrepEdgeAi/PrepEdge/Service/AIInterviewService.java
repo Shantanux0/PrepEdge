@@ -1,20 +1,17 @@
 package com.PrepEdgeAi.PrepEdge.Service;
 
 import com.PrepEdgeAi.PrepEdge.Entity.InterviewQuestion;
-import com.PrepEdgeAi.PrepEdge.Keyword.KeywordPacks;
 import com.PrepEdgeAi.PrepEdge.Repository.InterviewQuestionRepository;
+import com.PrepEdgeAi.PrepEdge.Keyword.KeywordPacks;
 import com.PrepEdgeAi.PrepEdge.provider.AIProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-
+import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -22,68 +19,108 @@ public class AIInterviewService {
 
     private final InterviewQuestionRepository repository;
     private final List<AIProvider> aiProviders; // Spring will inject all beans that implement AIProvider
-    private final RestTemplate restTemplate; // Still needed for topic classification
-
-    @Value("${gemini.api.key}")
-    private String geminiApiKey; // Keep for the classifier
 
     private static final Set<String> VALID_KEYWORDS = KeywordPacks.getAllKeywords();
 
     /**
-     * Generate interview questions for a given topic by trying providers in order.
+     * Generate interview questions for one or more topics (comma-separated).
      */
-    public List<InterviewQuestion> generateQuestions(String topic) {
-        final String safeTopic = normalize(topic);
-
-        if (!isProgrammingTopicAI(safeTopic)) {
-            throw new IllegalArgumentException("Topic is not recognized as programming-related.");
+    public List<InterviewQuestion> generateQuestions(String topicString) {
+        if (topicString == null || topicString.isBlank()) {
+            throw new IllegalArgumentException("Topic cannot be empty.");
         }
 
-        log.info("Generating questions for topic: {}", safeTopic);
+        // 1. Parse and limit topics
+        String[] rawTopics = topicString.split(",");
+        List<String> topics = new ArrayList<>();
+        for (String t : rawTopics) {
+            String trimmed = t.trim();
+            if (!trimmed.isEmpty()) {
+                topics.add(trimmed);
+            }
+            if (topics.size() >= 3) break; // Hard limit of 3 topics
+        }
 
-        for (AIProvider provider : aiProviders) {
+        if (topics.isEmpty()) {
+            throw new IllegalArgumentException("No valid topics provided.");
+        }
+
+        log.info("Processing {} topics: {}", topics.size(), topics);
+
+        // 2. Process each topic
+        List<InterviewQuestion> allQuestions = new ArrayList<>();
+        
+        for (String topic : topics) {
             try {
-                List<InterviewQuestion> questions = provider.generateQuestions(safeTopic);
-                if (questions != null && !questions.isEmpty()) {
-                    repository.saveAll(questions);
-                    return questions;
+                final String safeTopic = normalize(topic);
+                
+                // Validate topic
+                if (!isProgrammingTopicAI(safeTopic)) {
+                    log.warn("Topic '{}' rejected as non-tech. Skipping.", safeTopic);
+                    continue; // Skip invalid topics
                 }
+
+                log.info("Generating questions for topic: {}", safeTopic);
+                boolean generated = false;
+
+                for (AIProvider provider : aiProviders) {
+                    try {
+                        List<InterviewQuestion> questions = provider.generateQuestions(safeTopic);
+                        if (questions != null && !questions.isEmpty()) {
+                            allQuestions.addAll(questions);
+                            repository.saveAll(questions);
+                            generated = true;
+                            break; // Stop after first successful provider for this topic
+                        }
+                    } catch (Exception e) {
+                        log.warn("Provider '{}' failed for topic '{}'. Trying next. Error: {}",
+                                provider.getName(), safeTopic, e.getMessage());
+                    }
+                }
+
+                // Fallback for this specific topic if all providers fail
+                if (!generated) {
+                    log.warn("All AI providers failed for topic '{}'. Using fallback.", safeTopic);
+                    List<InterviewQuestion> fallback = buildTopicAwareFallback(safeTopic);
+                    allQuestions.addAll(fallback);
+                    repository.saveAll(fallback);
+                }
+
             } catch (Exception e) {
-                log.warn("Provider '{}' failed for topic '{}'. Trying next provider. Error: {}",
-                        provider.getName(), safeTopic, e.getMessage());
+                log.error("Internal error processing topic '{}': {}", topic, e.getMessage());
             }
         }
 
-        // Fallback if all AI providers fail
-        log.error("All AI providers failed. Returning topic-aware fallback for: {}", safeTopic);
-        List<InterviewQuestion> fallback = buildTopicAwareFallback(safeTopic);
-        repository.saveAll(fallback);
-        return fallback;
+        if (allQuestions.isEmpty()) {
+            throw new IllegalArgumentException("Could not generate questions for the provided topics.");
+        }
+
+        return allQuestions;
     }
 
     /**
      * AI-based classification of topic.
-     * NOTE: The classification logic still uses Gemini directly for simplicity.
-     * This could also be refactored to use the provider pattern if desired.
+     * Uses the primary AI provider for classification.
      */
-    @SuppressWarnings("unchecked")
     private boolean isProgrammingTopicAI(String topic) {
         if (topic == null || topic.isBlank()) return false;
-        String prompt = "Classify this topic: '" + topic + "'. Is it related to programming or not? Answer with 'Yes' or 'No'.";
+        if (aiProviders.isEmpty()) {
+            log.warn("No AI providers available for classification. Falling back to static keyword check.");
+            return VALID_KEYWORDS.contains(topic.toLowerCase().trim());
+        }
+
+        // Try using the first available provider (which will be Groq)
+        AIProvider provider = aiProviders.get(0);
         try {
-            // Corrected URL syntax
-            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + geminiApiKey;
-            Map<String, Object> body = Map.of("contents", List.of(Map.of("parts", List.of(Map.of("text", prompt)))));
-            Map<String, Object> aiResponse = restTemplate.postForObject(url, body, Map.class);
-
-            List<Map<String, Object>> candidates = (List<Map<String, Object>>) aiResponse.get("candidates");
-            Map<String, Object> content = (Map<String, Object>) candidates.get(0).get("content");
-            List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
-            String text = parts.get(0).get("text").toString().trim().toLowerCase();
-
-            return text.contains("yes");
+            boolean isValid = provider.classifyTopic(topic);
+            if (!isValid) {
+                // Double check with keyword pack for robustness
+                return VALID_KEYWORDS.contains(topic.toLowerCase().trim());
+            }
+            return true;
         } catch (Exception e) {
-            log.warn("AI topic classification failed for '{}': {}. Falling back to static keyword check.", topic, e.getMessage());
+            log.warn("AI topic classification failed for '{}' using {}: {}. Falling back to static keyword check.",
+                    topic, provider.getName(), e.getMessage());
             return VALID_KEYWORDS.contains(topic.toLowerCase().trim());
         }
     }
@@ -95,6 +132,13 @@ public class AIInterviewService {
         return s == null ? "" : s.trim();
     }
 
+
+    /**
+     * Returns all currently supported keywords/topics.
+     */
+    public Set<String> getAllSupportedTopics() {
+        return VALID_KEYWORDS;
+    }
 
     /**
      * Builds a list of topic-aware fallback questions if all AI providers fail.
