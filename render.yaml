@@ -21,7 +21,7 @@ services:
         value: http://localhost:5173,https://prepedge.onrender.com
 
   # --- Frontend Static Site ---
-  - type: static
+  - type: static_site
     name: prepedge-frontend
     runtime: node
     rootDir: frontend
