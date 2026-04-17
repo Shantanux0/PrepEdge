@@ -2,7 +2,7 @@ services:
   # --- PrepEdge API (Backend) ---
   - type: web
     name: prepedge-api
-    runtime: java
+    runtime: docker
     rootDir: PrepEdgeBackend
     buildCommand: ./mvnw clean install -DskipTests
     startCommand: java -jar target/demo-0.0.1-SNAPSHOT.jar
