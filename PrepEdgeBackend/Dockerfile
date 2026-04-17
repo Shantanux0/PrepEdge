@@ -1,29 +1,41 @@
-# --- Build Stage ---
-# Use a valid and official Maven image that includes JDK 21
-FROM maven:3.9-eclipse-temurin-21 AS build
+# --- Stage 1: Build Stage ---
+FROM maven:3.9-eclipse-temurin-21-slim AS build
 
-# Set the working directory
-WORKDIR /app
+# Set build directory
+WORKDIR /build
 
-# Copy the pom.xml and the source code
+# 1. Copy pom.xml only to cache dependencies
 COPY pom.xml .
+
+# 2. Download dependencies (this layer will be cached unless pom.xml changes)
+RUN mvn dependency:go-offline -B
+
+# 3. Copy source code and build the application
 COPY src ./src
+RUN mvn clean package -DskipTests -B
 
-# Build the application and create the executable JAR file
-RUN mvn clean package -DskipTests
+# --- Stage 2: Runtime Stage ---
+FROM eclipse-temurin:21-jre-alpine
 
-# --- Final Stage ---
-# Use a lightweight Java 21 image for the final container
-FROM openjdk:21-jdk-slim
-
-# Set a working directory inside the container
+# Set deployment directory
 WORKDIR /app
 
-# Copy the compiled JAR file from the 'build' stage
-COPY --from=build /app/target/*.jar app.jar
+# 1. Create a non-root user for security
+RUN addgroup -S prepedge && adduser -S prepedge -G prepedge
 
-# Tell the container to listen on port 8080
+# 2. Copy the fat JAR from the build stage
+COPY --from=build /build/target/*.jar app.jar
+
+# 3. Set ownership to the non-root user
+RUN chown -R prepedge:prepedge /app
+USER prepedge
+
+# 4. Standard Spring Boot environment variables
+ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC"
+ENV SPRING_PROFILES_ACTIVE=prod
+
+# 5. Expose the server port
 EXPOSE 8080
 
-# The command to run when the container starts
-ENTRYPOINT ["java","-jar","app.jar"]
+# 6. Optimized entry point with memory management
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
