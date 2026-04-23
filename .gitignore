@@ -1,9 +1,13 @@
 .DS_Store
 .idea/
+.vscode/
 node_modules/
-.env
+dist/
+.env*
 target/
 *.class
 bin/
 *.jar
 *.war
+out/
+build/

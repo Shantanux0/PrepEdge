@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.aiInterview</groupId>
-	<artifactId>demo</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>demo</name>
-	<description>Demo project for Spring Boot</description>
+	<artifactId>PrepEdge</artifactId>
+	<version>1.0.0</version>
+	<name>PrepEdge</name>
+	<description>Precision AI Interview Preparation Platform</description>
 	<url/>
 	<licenses>
 		<license/>
