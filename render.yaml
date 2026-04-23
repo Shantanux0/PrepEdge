@@ -1,10 +1,11 @@
 services:
-  # Backend Service
+  # Backend - Web Service
   - type: web
     name: prepedge-backend
     env: docker
     plan: free
     region: ohio
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: DB_HOST
         fromDatabase:
@@ -33,7 +34,7 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
 
-  # Frontend Service
+  # Frontend - Static Site
   - type: web
     name: prepedge-frontend
     env: static
