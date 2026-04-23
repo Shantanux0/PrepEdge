@@ -12,6 +12,7 @@ export default function SearchSection({
   companySearchCount,
   companyLimit
 }) {
+  const [inputValue, setInputValue] = useState(topic);
   const [allTopics, setAllTopics] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -19,6 +20,11 @@ export default function SearchSection({
   const dropdownRef = useRef(null);
 
   const isLimitReached = companySearchCount >= companyLimit;
+
+  // Sync internal value with prop if prop changes from outside (e.g. example topics)
+  useEffect(() => {
+    setInputValue(topic);
+  }, [topic]);
 
   // --- FETCH TOPICS ---
   useEffect(() => {
@@ -51,7 +57,7 @@ export default function SearchSection({
   // --- FILTER LOGIC ---
   const handleInputChange = (e) => {
     const value = e.target.value;
-    setTopic(value);
+    setInputValue(value);
 
     if (!value.trim()) {
       setSuggestions([]);
@@ -79,7 +85,7 @@ export default function SearchSection({
   };
 
   const selectSuggestion = (suggestion) => {
-    const segments = topic.split(',').map(s => s.trim());
+    const segments = inputValue.split(',').map(s => s.trim());
     segments[segments.length - 1] = suggestion;
     
     let newTopic = segments.join(', ');
@@ -89,7 +95,8 @@ export default function SearchSection({
       newTopic += '';
     }
     
-    setTopic(newTopic);
+    setInputValue(newTopic);
+    setTopic(newTopic); // Update parent
     setSuggestions([]);
     setShowSuggestions(false);
   };
@@ -109,8 +116,14 @@ export default function SearchSection({
         setShowSuggestions(false);
       }
     } else if (e.key === 'Enter') {
+      setTopic(inputValue); // Sync parent
       onGenerate(false);
     }
+  };
+
+  const handleGenerate = () => {
+    setTopic(inputValue); // Sync parent before generating
+    onGenerate(false);
   };
 
   return (
@@ -125,7 +138,7 @@ export default function SearchSection({
               <input
                 type="text"
                 placeholder="e.g. 'Frontend, React' (Max 3 topics)"
-                value={topic}
+                value={inputValue}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 className="w-full py-3 bg-transparent text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none text-lg"
@@ -134,7 +147,7 @@ export default function SearchSection({
 
               {/* Suggestions Dropdown */}
               {showSuggestions && (
-                <div className="absolute top-full left-0 right-0 mt-4 p-2 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 z-50 animate-reveal">
+                <div className="absolute top-full left-0 right-0 mt-4 p-2 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 z-50 animate-reveal will-change-transform">
                   <ul className="flex flex-col gap-1">
                     {suggestions.map((s, idx) => (
                       <li 
@@ -157,8 +170,8 @@ export default function SearchSection({
             </div>
             
             <button
-              onClick={() => onGenerate(false)}
-              disabled={loading || !topic.trim()}
+              onClick={handleGenerate}
+              disabled={loading || !inputValue.trim()}
               className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-br from-slate-900 to-slate-800 dark:from-primary-500 dark:to-orange-600 text-white font-bold rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group overflow-hidden relative shadow-lg shadow-black/10 dark:shadow-primary-500/20 hover:shadow-xl hover:shadow-black/20 dark:hover:shadow-primary-500/40 hover:-translate-y-0.5 active:scale-95 border-t border-white/10"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[100%] group-hover:animate-shine"></div>
