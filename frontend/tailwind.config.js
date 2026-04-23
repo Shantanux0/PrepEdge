@@ -54,9 +54,9 @@ export default {
           '100%': { transform: 'translateX(100%) translateY(100%)' },
         },
         successGlow: {
-          '0%': { boxShadow: '0 0 0 0 rgba(79, 70, 22, 0)', transform: 'scale(1)' },
-          '50%': { boxShadow: '0 0 20px 10px rgba(79, 70, 22, 0.2)', transform: 'scale(1.02)' },
-          '100%': { boxShadow: '0 0 0 0 rgba(79, 70, 22, 0)', transform: 'scale(1)' },
+          '0%': { boxShadow: '0 0 0 0 rgba(79, 70, 22, 0)' },
+          '50%': { boxShadow: '0 0 20px 10px rgba(79, 70, 22, 0.2)' },
+          '100%': { boxShadow: '0 0 0 0 rgba(79, 70, 22, 0)' },
         },
         'spin-slow': {
           'from': { transform: 'rotate(0deg)' },
