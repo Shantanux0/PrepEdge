@@ -22,9 +22,10 @@ public class InterviewController {
 //        return aiService.generateQuestions(topic);
 //    }
     @PostMapping("/api/interview/generate")
-    public List<InterviewQuestion> generateQuestions(@RequestBody Map<String, String> request) {
-        String topic = request.get("topic");
-        return aiService.generateQuestions(topic);
+    public List<InterviewQuestion> generateQuestions(@RequestBody Map<String, Object> request) {
+        String topic = (String) request.get("topic");
+        List<String> companies = (List<String>) request.get("companies");
+        return aiService.generateQuestions(topic, companies);
     }
 
     @GetMapping("/api/interview/topics")

@@ -88,9 +88,9 @@ public class GroqProvider implements AIProvider {
     }
 
     @Override
-    public List<InterviewQuestion> generateQuestions(String topic) throws Exception {
-        log.info("Attempting to generate questions for topic '{}' with Groq model: {}", topic, model);
-        Map<String, Object> response = callGroq(topic);
+    public List<InterviewQuestion> generateQuestions(String topic, List<String> companies) throws Exception {
+        log.info("Attempting to generate questions for topic '{}' (companies: {}) with Groq model: {}", topic, companies, model);
+        Map<String, Object> response = callGroq(topic, companies);
         List<InterviewQuestion> parsed = parseResponse(response, topic);
         if (!parsed.isEmpty()) {
             log.info("Successfully generated {} questions for topic '{}' using Groq model {}", parsed.size(), topic, model);
@@ -99,15 +99,19 @@ public class GroqProvider implements AIProvider {
         return Collections.emptyList();
     }
 
-    private String buildPrompt(String topic) {
+    private String buildPrompt(String topic, List<String> companies) {
+        String companyContext = (companies == null || companies.isEmpty()) 
+            ? "" 
+            : " specifically for the following companies: " + String.join(", ", companies);
+            
         return """
-                Generate 10 compact Q&A snippets for the role/topic "%s".
+                Generate 10 compact Q&A snippets for the role/topic "%s"%s.
                 Each item must be a JSON object with fields: "question", "answer", "difficulty" (Easy|Medium|Hard).
                 Keep answers to 2–4 sentences.
-                """.formatted(topic);
+                """.formatted(topic, companyContext);
     }
 
-    private Map<String, Object> callGroq(String topic) {
+    private Map<String, Object> callGroq(String topic, List<String> companies) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(apiKey);
@@ -118,7 +122,7 @@ public class GroqProvider implements AIProvider {
         );
         Map<String, Object> userMessage = Map.of(
                 "role", "user",
-                "content", buildPrompt(topic)
+                "content", buildPrompt(topic, companies)
         );
 
         Map<String, Object> body = Map.of(

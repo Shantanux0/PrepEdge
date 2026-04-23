@@ -10,6 +10,7 @@ import { Zap, Target } from './components/Icons';
 export default function App() {
   // --- STATE MANAGEMENT ---
   const [topic, setTopic] = useState("");
+  const [companies, setCompanies] = useState("");
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -20,6 +21,11 @@ export default function App() {
     if (saved !== null) return JSON.parse(saved);
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
+  const [companySearchCount, setCompanySearchCount] = useState(() => {
+    const saved = localStorage.getItem('companySearchCount');
+    return saved ? parseInt(saved) : 0;
+  });
+  const COMPANY_LIMIT = 5;
 
   const exampleTopics = [
     "Frontend Engineering",
@@ -88,7 +94,10 @@ export default function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ topic: topic })
+        body: JSON.stringify({ 
+          topic: topic,
+          companies: companies.split(',').map(c => c.trim()).filter(Boolean).slice(0, 5)
+        })
       });
 
       if (!response.ok) {
@@ -98,6 +107,14 @@ export default function App() {
       const data = await response.json();
       if (Array.isArray(data)) {
         append ? setQuestions(prev => [...prev, ...data]) : setQuestions(data);
+        
+        // Increment company search count if companies were used
+        if (!append && companies.trim()) {
+          const newCount = companySearchCount + 1;
+          setCompanySearchCount(newCount);
+          localStorage.setItem('companySearchCount', newCount.toString());
+        }
+
         if (!append) {
           setTimeout(() => {
             document.getElementById('results-section')?.scrollIntoView({ behavior: 'smooth' });
@@ -131,8 +148,8 @@ export default function App() {
             </div>
           </div>
 
-          <div className="text-center animate-fade-in-up">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-4">
+          <div className="text-center animate-fade-in-up px-6">
+            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-4">
               PrepEdge
             </h1>
             <div className="flex flex-col items-center gap-3">
@@ -162,9 +179,13 @@ export default function App() {
           <SearchSection 
             topic={topic} 
             setTopic={setTopic} 
+            companies={companies}
+            setCompanies={setCompanies}
             onGenerate={fetchQuestions} 
             loading={loading}
             exampleTopics={exampleTopics}
+            companySearchCount={companySearchCount}
+            companyLimit={COMPANY_LIMIT}
           />
         </div>
 
@@ -177,7 +198,7 @@ export default function App() {
           </div>
         )}
 
-        <div id="results-section" className="max-w-7xl mx-auto px-4 sm:px-6 scroll-mt-24">
+        <div id="results-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map(i => (
@@ -194,7 +215,7 @@ export default function App() {
                   {questions.length} Concepts Identified
                 </span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 {questions.map((q, idx) => (
                   <QuestionCard key={idx} q={q} index={idx} />
                 ))}

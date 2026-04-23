@@ -25,7 +25,7 @@ public class AIInterviewService {
     /**
      * Generate interview questions for one or more topics (comma-separated).
      */
-    public List<InterviewQuestion> generateQuestions(String topicString) {
+    public List<InterviewQuestion> generateQuestions(String topicString, List<String> companies) {
         if (topicString == null || topicString.isBlank()) {
             throw new IllegalArgumentException("Topic cannot be empty.");
         }
@@ -65,7 +65,7 @@ public class AIInterviewService {
 
                 for (AIProvider provider : aiProviders) {
                     try {
-                        List<InterviewQuestion> questions = provider.generateQuestions(safeTopic);
+                        List<InterviewQuestion> questions = provider.generateQuestions(safeTopic, companies);
                         if (questions != null && !questions.isEmpty()) {
                             allQuestions.addAll(questions);
                             repository.saveAll(questions);

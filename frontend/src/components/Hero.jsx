@@ -19,35 +19,37 @@ export default function Hero({ onStartScroll }) {
           <span>Professional Interview Prep</span>
         </div>
         
-        <h1 className="text-4xl sm:text-7xl font-black text-slate-900 dark:text-white leading-[1.1] mb-6 animate-fade-in-up [animation-delay:200ms]">
+        <h1 className="text-3xl sm:text-7xl font-black text-slate-900 dark:text-white leading-[1.1] mb-6 animate-fade-in-up [animation-delay:200ms]">
           Master Your Next Interview with <span className="bg-gradient-to-r from-primary-500 via-orange-500 to-amber-500 bg-clip-text text-transparent">Elite Insights</span>
         </h1>
         
-        <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-400 mb-10 max-w-2xl mx-auto animate-fade-in-up [animation-delay:400ms]">
+        <p className="text-base sm:text-xl text-slate-600 dark:text-slate-400 mb-10 max-w-2xl mx-auto animate-fade-in-up [animation-delay:400ms]">
           Stop guessing. Get industry-standard interview questions tailored to your specific role and tech stack. Engineered for precision.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up [animation-delay:600ms]">
+        <div className="flex flex-col items-center gap-6 animate-fade-in-up [animation-delay:600ms]">
           <button
             onClick={onStartScroll}
-            className="group px-10 py-4.5 bg-gradient-to-br from-primary-500 to-orange-600 text-white font-black rounded-2xl shadow-xl shadow-primary-500/20 hover:shadow-2xl hover:shadow-primary-500/40 transition-all duration-300 flex items-center gap-2 hover:-translate-y-1 active:scale-95 relative overflow-hidden border-t border-white/20"
+            className="w-full sm:w-auto group px-10 py-4 bg-gradient-to-br from-primary-500 to-orange-600 text-white font-black rounded-2xl shadow-xl shadow-primary-500/20 hover:shadow-2xl hover:shadow-primary-500/40 transition-all duration-300 flex items-center justify-center gap-2 hover:-translate-y-1 active:scale-95 relative overflow-hidden border-t border-white/20"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[100%] group-hover:animate-shine"></div>
             <span className="relative z-10">Get Started Now</span>
             <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative z-10" />
           </button>
           
-          <div className="flex -space-x-2">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 overflow-hidden">
-                <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="User" />
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <div className="flex -space-x-2">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 overflow-hidden">
+                  <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="User" />
+                </div>
+              ))}
+              <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white dark:border-slate-900 bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500">
+                1k+
               </div>
-            ))}
-            <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-white dark:border-slate-900 bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500">
-              1k+
             </div>
+            <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium tracking-tight">Trusted by 1,000+ developers</span>
           </div>
-          <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">Trusted by developers</span>
         </div>
       </div>
     </section>

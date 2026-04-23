@@ -17,7 +17,7 @@ public interface AIProvider {
      * @return A list of InterviewQuestion objects.
      * @throws Exception if the provider fails to generate questions.
      */
-    List<InterviewQuestion> generateQuestions(String topic) throws Exception;
+    List<InterviewQuestion> generateQuestions(String topic, List<String> companies) throws Exception;
 
     /**
      * Classifies whether a topic is related to programming or tech interviews.
