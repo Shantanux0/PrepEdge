@@ -129,7 +129,7 @@ export default function SearchSection({
   return (
     <div className="max-w-3xl mx-auto px-4 mb-16">
       <div className="relative group" ref={dropdownRef}>
-        <div className="absolute -inset-1 bg-gradient-to-r from-primary-500 to-indigo-600 rounded-[2rem] blur opacity-20 group-focus-within:opacity-40 transition duration-1000"></div>
+        <div className="absolute -inset-1 bg-gradient-to-r from-primary-500/20 to-indigo-600/20 rounded-[2rem] group-focus-within:bg-gradient-to-r group-focus-within:from-primary-500/30 group-focus-within:to-indigo-600/30 transition duration-500"></div>
         
         <div className={`relative flex flex-col items-stretch gap-4 p-4 bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-800 ${loading ? 'animate-success-glow' : ''}`}>
           <div className="flex flex-col sm:flex-row items-center gap-3">

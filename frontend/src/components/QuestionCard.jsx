@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Clipboard, Check } from './Icons';
 
-export default function QuestionCard({ q, index, studyMode }) {
+const QuestionCard = memo(({ q, index, studyMode }) => {
   const [isFlipped, setIsFlipped] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
 
@@ -56,7 +56,7 @@ export default function QuestionCard({ q, index, studyMode }) {
         </div>
 
         {/* Back Side: Answer */}
-        <div className={`absolute inset-0 backface-hidden rotate-y-180 flex flex-col p-6 rounded-3xl glass-card text-left bg-slate-50 dark:bg-slate-900/50 overflow-hidden ${isFlipped ? 'animate-success-glow' : ''}`}>
+        <div className={`absolute inset-0 backface-hidden rotate-y-180 flex flex-col p-6 rounded-3xl glass-card text-left bg-slate-50 dark:bg-slate-900/50 overflow-hidden ${isFlipped ? 'rotate-y-180 animate-success-glow' : ''}`}>
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[100%] group-hover:animate-shine"></div>
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-bold text-green-500 bg-green-500/10 px-3 py-1 rounded-full uppercase tracking-widest">
@@ -82,4 +82,6 @@ export default function QuestionCard({ q, index, studyMode }) {
       </div>
     </div>
   );
-}
+});
+
+export default QuestionCard;
