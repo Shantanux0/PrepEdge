@@ -14,23 +14,23 @@ Precision-engineered interview preparation platform powered by AI.
 - **AI**: Groq API (Llama 3.1).
 
 ## Deployment
-### 1. Render Blueprint (Recommended)
-This project is configured for **Render Blueprints**. To deploy everything (Backend, Frontend, and Database) at once:
-1. Push this code to your GitHub repository.
-2. In the Render Dashboard, click **New +** > **Blueprint**.
-3. Select your repository.
-4. Render will automatically detect the `render.yaml` and set up all services.
+### 1. Backend (Back4App Containers)
+This project is optimized for **Back4App**. To deploy:
+1. Push this code to GitHub.
+2. Connect your repo to Back4App Containers.
+3. Set these Environment Variables in the Back4App dashboard:
+   - `SPRING_DATASOURCE_URL`: `jdbc:postgresql://<your-supabase-host>:5432/postgres?sslmode=require`
+   - `SPRING_DATASOURCE_USERNAME`: `postgres.<your-project-id>`
+   - `SPRING_DATASOURCE_PASSWORD`: `<your-supabase-password>`
+   - `GROQ_API_KEY`: Your Groq API key.
+   - `CORS_ALLOWED_ORIGINS`: `*` (or your frontend URL).
 
-### 2. Manual Deployment
-- **Frontend**: Deploy the `frontend` folder to Vercel/Netlify.
-- **Backend**: Deploy the root directory to Railway/Render using the provided `Dockerfile`.
+### 2. Frontend (Vercel/Netlify)
+- Deploy the `frontend` folder.
+- Set `VITE_API_BASE_URL` to your Back4App App URL.
 
 ## Setup
 1. Clone the repository.
-2. Set environment variables:
-   - `GROQ_API_KEY`: Your Groq API key.
-   - `SPRING_DATASOURCE_URL`: PostgreSQL connection string.
-   - `SPRING_DATASOURCE_PASSWORD`: DB password.
-   - `CORS_ALLOWED_ORIGINS`: Production frontend URL.
+2. Set environment variables locally or in `.env` (frontend).
 3. Run `mvn clean install` for backend.
 4. Run `npm install && npm run build` for frontend.
